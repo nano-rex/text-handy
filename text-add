@@ -1,0 +1,77 @@
+#!/bin/bash
+
+for i in "$@"; do
+	arg+=("$i")
+	lastArg=$i
+done
+
+helps() {
+	printf "\nUsage:\n\n"
+	printf "help\n"
+	printf "\nExamples:\n\n"
+	echo "$0 above row 1 \"#/bin/bash\" text.txt 		# add new row above first line"
+	echo "$0 above pattern \"hello\" \"above you\" text.txt	# add new row above character"
+	echo
+	echo "$0 below row \$ \"exit 0\" text.txt		# add new row below last line"
+	echo "$0 below pattern \"hello\" \"below you\" text.txt	# add new row below character"
+	echo
+	echo "$0 preffix all \"\t\" text.txt			# add tab in the beginning of each lines"
+	echo "$0 preffix row 2 \"- \" text.txt			# adding dash in the beginning of line 2"
+	echo
+	echo "$0 suffix all \";\" text.txt			# add semicolon in the end of each lines"
+	echo "$0 suffix row 3,5 \".\" text.txt			# adding dot in the end of line 3 to 5"
+	echo
+	exit 2
+}
+
+if [[ ${arg[0]} == "above" ]]; then
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "row" || ${arg[1]} == "rownum" ]]; then
+		sed ''${arg[2]}' 'i' '"${arg[3]}"' ' $lastArg
+		sed -i ''${arg[2]}' 'i' '"${arg[3]}"' ' $lastArg
+	elif [[ ${arg[1]} == "pattern" ]]; then
+		sed '/'"${arg[2]}"'/'i' '"${arg[3]}"'' $lastArg
+		sed -i '/'"${arg[2]}"'/'i' '"${arg[3]}"'' $lastArg
+	fi
+elif [[ ${arg[0]} == "below" ]]; then
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "row" || ${arg[1]} == "rownum" ]]; then
+		sed ''${arg[2]}' 'a' '"${arg[3]}"' ' $lastArg
+		sed -i ''${arg[2]}' 'a' '"${arg[3]}"' ' $lastArg
+	elif [[ ${arg[1]} == "pattern" ]]; then
+		sed '/'"${arg[2]}"'/'a' '"${arg[3]}"'' $lastArg
+		sed -i '/'"${arg[2]}"'/'a' '"${arg[3]}"'' $lastArg
+	fi
+elif [[ ${arg[0]} == "preffix" ]]; then # affix to the left
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "row" || ${arg[1]} == "rownum" ]]; then
+		sed -e ${arg[2]}'s/.*/'"${arg[3]}"'&/' $lastArg
+		sed -i ${arg[2]}'s/.*/'"${arg[3]}"'&/' $lastArg
+	elif [[ ${arg[1]} == "all" ]]; then
+		sed -ne 's/.*/'"${arg[2]}"'&/p' $lastArg
+		sed -i 's/.*/'"${arg[2]}"'&/' $lastArg
+	elif [[ ${arg[1]} == "pattern" ]]; then
+		sed -e 's/.*/'"${arg[2]}"'&/' $lastArg
+		sed -i 's/.*/'"${arg[2]}"'&/' $lastArg
+	fi
+elif [[ ${arg[0]} == "suffix" ]]; then # affix to the right
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "row" || ${arg[1]} == "rownum" ]]; then
+		sed -e ${arg[2]}'s/$/'"${arg[3]}"'&/' $lastArg
+		sed -i ${arg[2]}'s/$/'"${arg[3]}"'&/' $lastArg
+	elif [[ ${arg[1]} == "all" ]]; then
+		sed -ne 's/$/'"${arg[2]}"'&/p' $lastArg
+		sed -i 's/$/'"${arg[2]}"'&/' $lastArg
+	elif [[ ${arg[1]} == "pattern" ]]; then
+		sed -e 's/$/'"${arg[2]}"'&/' $lastArg
+		sed -i 's/$/'"${arg[2]}"'&/' $lastArg
+	fi
+else
+	helps
+fi
+
+exit 0

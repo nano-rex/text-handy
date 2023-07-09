@@ -1,0 +1,68 @@
+#!/bin/bash
+
+for i in "$@"; do
+	arg+=("$i")
+	lastArg=$i
+done
+
+helps () {
+	printf "\nUsage:\n\n"
+	printf "help\n"
+	printf "\nExamples:\n\n"
+	echo "$0 row 1,3 strings \"\" \"\" text.txt		# replace specific strings in line"
+	echo "$0 row 1 \"\" text.txt				# replace line 1"
+	echo "$0 row \$ \"\" text.txt				# replace last line"
+	echo "$0 row 1,5 \"\" text.txt				# replace a range of lines"
+	echo "$0 row 2,4! \"\" text.txt				# replace all lines except 2 to 4"
+	echo "$0 row newline \"<br>\" text.txt 			# replace empty lines"
+	echo
+	echo "$0 preffix row 1,2 \"- \" \"\" text.txt		# replace hyphen/dash at the beginning of line 1 and 2"
+	echo "$0 suffix row 3,4 \";\" \"\" text.txt		# replace semi-colon at the end of line 1 and 2"
+	echo
+	exit 2
+}
+
+if [[ ${arg[0]} == "row" || ${arg[0]} == "rownum" ]]; then
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "newline" ]]; then
+		sed '/^$/c\'"${arg[2]}"'' $lastArg
+		sed -i '/^$/c\'"${arg[2]}"'' $lastArg
+	elif [[ ${arg[2]} == "strings" ]]; then
+		sed ${arg[1]}'s/'"${arg[3]}"'/'"${arg[4]}"'/g' $lastArg
+		sed -i ${arg[1]}'s/'"${arg[3]}"'/'"${arg[4]}"'/g' $lastArg
+	else
+		sed ''${arg[1]}' c\'"${arg[2]}"'' $lastArg
+		sed -i ''${arg[1]}' c\'"${arg[2]}"'' $lastArg
+	fi
+elif [[ ${arg[0]} == "preffix" ]]; then # affix to the left
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "row" || ${arg[0]} == "rownum" ]]; then
+		sed -e ${arg[2]}'s/'${arg[3]}'*/'"${arg[4]}"'/' $lastArg
+		sed -i ${arg[2]}'s/'${arg[3]}'*/'"${arg[4]}"'/' $lastArg
+	elif [[ ${arg[1]} == "all" ]]; then
+		sed -ne 's/'${arg[2]}'*/'"${arg[3]}"'/p' $lastArg
+		sed -i 's/'${arg[2]}'*/'"${arg[3]}"'/' $lastArg
+	elif [[ ${arg[1]} == "strings" ]]; then
+		sed -e 's/'${arg[2]}'*/'"${arg[3]}"'/' $lastArg
+		sed -i 's/'${arg[2]}'*/'"${arg[3]}"'/' $lastArg
+	fi
+elif [[ ${arg[0]} == "suffix" ]]; then # affix to the right
+	if [[ ${arg[1]} == "" || ${arg[1]} == "-h" || ${arg[1]} == "--help" ]]; then
+		helps
+	elif [[ ${arg[1]} == "row" || ${arg[0]} == "rownum" ]]; then
+		sed -e ${arg[2]}'s/\'${arg[3]}'$/'"${arg[4]}"'/' $lastArg
+		sed -i ${arg[2]}'s/\'${arg[3]}'$/'"${arg[4]}"'/' $lastArg
+	elif [[ ${arg[1]} == "all" ]]; then
+		sed -ne 's/\'${arg[2]}'$/'"${arg[3]}"'/p' $lastArg
+		sed -i 's/\'${arg[2]}'$/'"${arg[3]}"'/' $lastArg
+	elif [[ ${arg[1]} == "strings" ]]; then
+		sed -e 's/\'${arg[2]}'$/'"${arg[3]}"'/' $lastArg
+		sed -i 's/\'${arg[2]}'$/'"${arg[3]}"'/' $lastArg
+	fi
+else
+	helps
+fi
+
+exit 0
