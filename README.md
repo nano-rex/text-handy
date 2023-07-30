@@ -1,6 +1,6 @@
 # text-handy
 
-### Usage
+### Examples:
 
 #### Adding semicolon at the end of entire lines
 
